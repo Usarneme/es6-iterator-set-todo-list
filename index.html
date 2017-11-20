@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Driven Development</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrapper">
+    <h2>TODO</h2>
+    <p></p>
+    <ul class="tasks">
+      <li>Loading Tasks...</li>
+    </ul>
+    <form class="add-items">
+      <input type="text" name="item" placeholder="Item Name" required>
+      <input type="submit" value="+ Add Item">
+    </form>
+  </div>
+  <script>
+    const formElement = document.querySelector('.add-items');
+    const tasksElement = document.querySelector('.tasks');
+    const items = new Set();
+
+    // Retrieve items from localStorage, recreate the Set from the stored JSON string
+    const intermediateArray = JSON.parse(localStorage.getItem('items'));
+    if(intermediateArray && intermediateArray.length > 0) {
+        intermediateArray.forEach(taskObj => {
+            create(taskObj)
+        })
+        renderUnorderedListChildren(items, tasksElement);
+    }
+
+    // Set logic
+    function contains(item) {
+        let bool = false;
+        items.forEach(todoItem => {
+        if (todoItem.task === item.task) {
+            bool = true;
+        }
+        })
+        return bool;
+    }
+
+    function create(item) {
+        if (contains(item)) return false;
+        items.add(item)
+        return true;
+    }
+    
+    function read() {
+        return items || false;
+    }
+    
+    function remove(item) {
+        let bool = false;
+        items.forEach(todoItem => {
+            if(todoItem.task === item.task) {
+                items.delete(todoItem)
+                bool = true;
+            }
+        })
+        return bool;
+    }
+
+    function toggleDone(item) {
+        if (!contains(item)) return false;
+        let doneItem = item;
+        doneItem.done = !item.done;
+        return update(item, doneItem)
+    }
+
+    function update(item, newItem) {
+        if (!contains(item)) return false;    
+        items.delete(item)
+        items.add(newItem)
+        return true;
+    }
+
+    // HTML Functions and Handlers
+    function addItemFromForm(e) {
+        e.preventDefault();
+        const text = (this.querySelector('[name=item]')).value;
+        const item = {
+            task: text,
+            done: false
+        };
+        create(item);
+        renderUnorderedListChildren(items, tasksElement);
+        localStorage.setItem('items', JSON.stringify(Array.from(items)));
+        this.reset();
+    }
+
+    function toggleCheckbox(e) {
+        if (!e.target.matches('input')) return;
+        const taskElement = e.target;
+        let setTask;
+        // compare the task value for each element in the items Set to the currently clicked-on task value
+        for (let val of items) {
+            if (val.task === e.target.id) {
+                setTask = val;
+            }
+        }
+        toggleDone(setTask);
+        localStorage.setItem('items', JSON.stringify(Array.from(items)));
+        renderUnorderedListChildren(items, tasksElement);
+    }
+
+    function renderUnorderedListChildren(setOfItems = new Set(), ulElement) {
+        let listItemsHtml = '';
+        if(setOfItems.size > 0) {
+            for (let todoItem of setOfItems) {
+            listItemsHtml += 
+                `<li>
+                <input type="checkbox" data-index=0 id="${todoItem.task}" ${todoItem.done ? 'checked' : ''} />
+                <label for="${todoItem.task}">${todoItem.task}</label>
+                </li>`
+            }
+            ulElement.innerHTML = listItemsHtml !== undefined ? listItemsHtml : 'No saved tasks.';
+        }
+    }
+
+    formElement.addEventListener('submit', addItemFromForm);
+    tasksElement.addEventListener('click', toggleCheckbox);
+
+  </script>
+</body>
+</html>
