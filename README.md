@@ -1,5 +1,7 @@
 # es6-iterator-set-todo-list
 
+### Example Build at usarneme-todo-vanilla-es6.surge.sh
+
 Working test.js covers all functions in todo.js. 
 
 `git clone ` this repo, `cd` this repo, and `npm install` to get the application running. You can test on localhost a myriad of ways; `python -m SimpleHTTPServer 8000` will work for this project (Python 2 version of the command).
